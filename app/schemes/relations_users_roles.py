@@ -24,4 +24,3 @@ class SRoleGetWithRels(SRoleSimple):
 class SUserGetWithRels(SUserSimple):
     role: Optional[SRoleSimple] = None
     trust_score: float = 5.0
-    created_at: Optional[str] = None

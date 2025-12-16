@@ -68,7 +68,7 @@ class AuthService(BaseService):
         # Проверяем, существует ли роль
         from app.services.roles import RolesService
         role_service = RolesService(self.db)
-        role = await role_service.get_role_by_id(user_data.role_id)
+        role = await role_service.get_role_by_id(1)
         if not role:
             from app.exceptions.roles import RoleNotFoundError
             raise RoleNotFoundError
@@ -95,15 +95,17 @@ class AuthService(BaseService):
         token_data = {"user_id": user.id, "email": user.email}
         access_token = self.create_access_token(token_data)
 
-        return STokenResponse(
-            token=access_token,
-            user=SUserResponse(
-                id=user.id,
-                name=user.full_name or user.email.split('@')[0],  # Используем email как имя, если full_name пустое
-                email=user.email,
-                trust_score=getattr(user, 'trust_score', 5.0)
-            )
-        )
+        return access_token
+        # return STokenResponse(
+        #     token=access_token,
+        #     user=SUserResponse(
+        #         id=user.id,
+        #         name=user.name,
+        #         # name=user.full_name or user.email.split('@')[0],  # Используем email как имя, если full_name пустое
+        #         email=user.email,
+        #         trust_score=getattr(user, 'trust_score', 5.0)
+        #     )
+        # )
 
     async def get_me(self, user_id: int) -> SUserGetWithRels:
         user = await self.db.users.get_one_or_none_with_role(id=user_id)

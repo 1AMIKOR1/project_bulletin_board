@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
-from app.api.web import router as web_router
+
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 
@@ -13,6 +13,7 @@ from app.api.locations import router as location_router
 from app.api.messages import router as message_router
 from app.api.reviews import router as review_router
 from app.api.roles import router as role_router
+from app.api.web import router as web_router
 
 app = FastAPI(title="ТовароОбмен", version="0.0.1")
 
@@ -20,14 +21,14 @@ app.mount("/static", StaticFiles(directory="app/static"), "static")
 templates = Jinja2Templates(directory="app/templates")
 
 # Подключаем роутеры
-app.include_router(auth_router, prefix="/auth", tags=["auth"])
-app.include_router(user_router, prefix="/users", tags=["users"])
-app.include_router(item_router, prefix="/items", tags=["items"])
-app.include_router(category_router, prefix="/categories", tags=["categories"])
-app.include_router(location_router, prefix="/locations", tags=["locations"])
-app.include_router(message_router, prefix="/messages", tags=["messages"])
-app.include_router(review_router, prefix="/reviews", tags=["reviews"])
-app.include_router(role_router, prefix="/roles", tags=["roles"])
+app.include_router(auth_router)
+app.include_router(user_router)
+app.include_router(item_router)
+app.include_router(category_router)
+app.include_router(location_router)
+app.include_router(message_router)
+app.include_router(review_router)
+app.include_router(role_router)
 app.include_router(web_router)
 
 
