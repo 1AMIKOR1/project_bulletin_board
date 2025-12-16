@@ -39,27 +39,25 @@ class SUserAddRequest(BaseModel):
     name: str
     email: EmailStr
     password: str
-    role_id: int
-    phone_number: Optional[str] = None
+    phone: Optional[str] = None
 
 
-
-    @field_validator("password")
-    @classmethod
-    def validate_password(cls, v):
-        if len(v) < 8:
-            from pydantic import ValidationError
-            raise ValidationError("Пароль должен содержать не менее 8 символов")
-        if not re.search(r"[A-Z]", v):
-            from pydantic import ValidationError
-            raise ValidationError("Пароль должен содержать хотя бы одну заглавную букву")
-        if not re.search(r"[a-z]", v):
-            from pydantic import ValidationError
-            raise ValidationError("Пароль должен содержать хотя бы одну строчную букву")
-        if not re.search(r"\d", v):
-            from pydantic import ValidationError
-            raise ValidationError("Пароль должен содержать хотя бы одну цифру")
-        return v
+    # @field_validator("password")
+    # @classmethod
+    # def validate_password(cls, v):
+    #     if len(v) < 8:
+    #         from pydantic import ValidationError
+    #         raise ValidationError("Пароль должен содержать не менее 8 символов")
+    #     if not re.search(r"[A-Z]", v):
+    #         from pydantic import ValidationError
+    #         raise ValidationError("Пароль должен содержать хотя бы одну заглавную букву")
+    #     if not re.search(r"[a-z]", v):
+    #         from pydantic import ValidationError
+    #         raise ValidationError("Пароль должен содержать хотя бы одну строчную букву")
+    #     if not re.search(r"\d", v):
+    #         from pydantic import ValidationError
+    #         raise ValidationError("Пароль должен содержать хотя бы одну цифру")
+    #     return v
 
 
 class SUserAdd(BaseModel):
@@ -67,8 +65,8 @@ class SUserAdd(BaseModel):
     email: EmailStr
     hashed_password: str
     name: str
-    null_name: Optional[str] = None
-    role_id: int | None=1
+    phone: Optional[str] = None
+    role_id: int | None = 1
 
 
 # ==================== ДЛЯ API ====================
@@ -78,7 +76,8 @@ class SUserGet(BaseModel):
     id: int
     name: str = ""
     email: str
-    trust_score: float = 5.0  # добавьте это поле
+    # trust_score: float = 5.0  # добавьте это поле
+    hashed_password: str
     created_at: Optional[datetime] = None
 
 

@@ -1,4 +1,5 @@
 # app/models/users.py
+from os import name
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from datetime import datetime
@@ -16,7 +17,9 @@ class UserModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     email: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(String, nullable=False)
     phone: Mapped[str] = mapped_column(String, nullable=True)
+    hashed_password: Mapped[str] = mapped_column(String(300), nullable=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"), nullable=True)
 
