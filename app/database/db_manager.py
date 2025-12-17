@@ -7,8 +7,9 @@ from app.repositories.messages import MessagesRepository
 from app.repositories.reviews import ReviewsRepository
 from app.repositories.roles import RolesRepository
 
+
 class DBManager:
-    def __init__(self, session_factory: async_session_maker): 
+    def __init__(self, session_factory: async_session_maker):
         self.session_factory = session_factory
 
     async def __aenter__(self):
@@ -30,3 +31,6 @@ class DBManager:
 
     async def commit(self):
         await self.session.commit()
+
+    async def rollback(self):
+        await self.session.rollback()

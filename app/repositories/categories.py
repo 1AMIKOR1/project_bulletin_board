@@ -25,3 +25,6 @@ class CategoriesRepository(BaseRepository):
 
         result = SCategoryGetWithItems.model_validate(model, from_attributes=True)
         return result
+
+    async def get_by_name(self, name: str):
+        return await self.get_one_or_none(name=name)

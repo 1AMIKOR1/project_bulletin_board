@@ -4,9 +4,6 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr, field_validator
 import re
 
-
-# ==================== ОСНОВНЫЕ СХЕМЫ ====================
-
 class UserBase(BaseModel):
     """Базовая схема пользователя"""
     email: EmailStr
@@ -40,25 +37,6 @@ class SUserAddRequest(BaseModel):
     email: EmailStr
     password: str
     phone: Optional[str] = None
-
-
-    # @field_validator("password")
-    # @classmethod
-    # def validate_password(cls, v):
-    #     if len(v) < 8:
-    #         from pydantic import ValidationError
-    #         raise ValidationError("Пароль должен содержать не менее 8 символов")
-    #     if not re.search(r"[A-Z]", v):
-    #         from pydantic import ValidationError
-    #         raise ValidationError("Пароль должен содержать хотя бы одну заглавную букву")
-    #     if not re.search(r"[a-z]", v):
-    #         from pydantic import ValidationError
-    #         raise ValidationError("Пароль должен содержать хотя бы одну строчную букву")
-    #     if not re.search(r"\d", v):
-    #         from pydantic import ValidationError
-    #         raise ValidationError("Пароль должен содержать хотя бы одну цифру")
-    #     return v
-
 
 class SUserAdd(BaseModel):
     """Для добавления в БД"""
@@ -109,8 +87,3 @@ class SUserWithOffers(BaseModel):
     """Пользователь с предложениями"""
     user: SUserGet
     offers: list = []
-
-
-# ==================== АЛИАСЫ ДЛЯ СОВМЕСТИМОСТИ ====================
-# Создаем алиасы для существующего кода
-# SUserGetWithRels = User  # временно, позже исправим
