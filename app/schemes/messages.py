@@ -11,9 +11,10 @@ class SMessageGet(BaseModel):
     id: int
     text: str
     sender_id: int
-    receiver_id: int
+    recipient_id: int  # ← Исправлено с receiver_id
     is_read: bool = False
     created_at: datetime
+    item_id: int  # ← Добавлено
 
     class Config:
         from_attributes = True
@@ -22,15 +23,17 @@ class SMessageGet(BaseModel):
 class SMessageGetWithRels(SMessageGet):
     """Схема сообщения с отношениями"""
     sender: Optional[dict] = None
-    receiver: Optional[dict] = None
+    recipient: Optional[dict] = None
+    item: Optional[dict] = None
 
 
 # ==================== ДЛЯ API ====================
 
 class SMessageAdd(BaseModel):
-    """Схема для добавления сообщения"""
+    """Схема для добавления ПРЯМОГО сообщения"""
     text: str
-    receiver_id: int
+    recipient_id: int  # ← Исправлено: receiver_id → recipient_id
+    item_id: int  # ← Обязательно! К какому товару сообщение?
 
 
 SMessageCreate = SMessageAdd  # Алиас для совместимости
@@ -48,10 +51,11 @@ class SMessagePatch(BaseModel):
     is_read: Optional[bool] = None
 
 
-# ==================== ДЛЯ ЧАТОВ ====================
+# ==================== ДЛЯ БУДУЩИХ ЧАТОВ ====================
+# (пока не используем, оставляем для совместимости)
 
 class SConversationGet(BaseModel):
-    """Схема для получения чата"""
+    """Схема для получения чата (заглушка)"""
     id: int
     partner_name: str
     last_message: str
@@ -60,7 +64,7 @@ class SConversationGet(BaseModel):
 
 
 class SConversationList(BaseModel):
-    """Схема для списка чатов"""
+    """Схема для списка чатов (заглушка)"""
     id: int
     partner: str
     last_message: str

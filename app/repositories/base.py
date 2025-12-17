@@ -1,7 +1,7 @@
+# app/repositories/base.py
 from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.exc import IntegrityError
-
 
 from app.database.database import Base
 from app.exceptions.base import ObjectAlreadyExistsError
@@ -52,7 +52,20 @@ class BaseRepository:
         result = self.schema.model_validate(model, from_attributes=True)
         return result
 
-    async def add(self, data: BaseModel):
+    async def add(self, data: BaseModel, ignore_duplicates: bool = False):
+        """
+        Добавить объект в БД
+
+        Args:
+            data: Объект Pydantic для добавления
+            ignore_duplicates: Если True, при дубликате вернет существующий объект вместо ошибки
+
+        Returns:
+            Созданный или существующий объект, либо None
+
+        Raises:
+            ObjectAlreadyExistsError: Если ignore_duplicates=False и объект уже существует
+        """
         try:
             add_stmt = (
                 insert(self.model).values(**data.model_dump()).returning(self.model)
@@ -67,7 +80,34 @@ class BaseRepository:
             return self.schema.model_validate(model, from_attributes=True)
 
         except IntegrityError as exc:
-            raise ObjectAlreadyExistsError from exc
+            if ignore_duplicates:
+                # Если разрешено игнорировать дубликаты - ищем существующий объект
+                print(f"⚠️ Объект уже существует, ищем его: {exc}")
+
+                # Пробуем найти по всем полям
+                existing = await self.get_one_or_none(**data.model_dump())
+                if existing:
+                    print(f"✅ Найден существующий объект с ID: {existing.id}")
+                    return existing
+
+                # Если не нашли по всем полям, пробуем найти по уникальным ключам
+                # Для отзывов: user_id и item_id
+                if hasattr(data, 'user_id') and hasattr(data, 'item_id'):
+                    existing = await self.get_one_or_none(
+                        user_id=data.user_id,
+                        item_id=data.item_id
+                    )
+                    if existing:
+                        print(f"✅ Найден отзыв user_id={data.user_id}, item_id={data.item_id}")
+                        return existing
+
+                print("⚠️ Дубликат найден, но не удалось определить существующий объект")
+                return None
+            else:
+                # Сообщаем, КАКОЙ объект уже существует
+                raise ObjectAlreadyExistsError(
+                    f"Объект уже существует. Данные: {data.model_dump()}"
+                ) from exc
 
     async def add_bulk(self, data: list[BaseModel]) -> None | BaseModel:
         """

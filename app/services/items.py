@@ -1,16 +1,18 @@
 # app/services/items.py
 from typing import Optional
 from app.exceptions.items import ItemNotFoundError, ItemAlreadyExistsError
-from app.schemes.items import SItemCreate, SItemUpdate, SItemPatch
+from app.schemes.items import SItemCreate, SItemUpdate, SItemPatch, SItemFilter
 from app.services.base import BaseService
 
 
 class ItemService(BaseService):
+    def __init__(self, db):  # <-- Уберите значение по умолчанию None!
+        super().__init__(db)
 
     async def create_item(self, item_data: SItemCreate):
         try:
-            # Создание нового объявления
-            new_item = await self.db.items.create(item_data.model_dump())
+            # ИСПРАВЬТЕ: create() → add() (как в категориях)
+            new_item = await self.db.items.add(item_data)  # <-- Используйте add(), а не create()
             await self.db.commit()
             return new_item
         except Exception as e:
@@ -27,29 +29,51 @@ class ItemService(BaseService):
         item = await self.db.items.get_one_or_none(id=item_id)
         if not item:
             raise ItemNotFoundError
-        # Обновление данных объявления
-        updated_item = await self.db.items.update(item_id, item_data.model_dump())
+        # ИСПРАВЬТЕ: update() → edit() (как в категориях)
+        await self.db.items.edit(item_data, id=item_id)  # <-- Используйте edit(), а не update()
         await self.db.commit()
+
+        # Получаем обновленный объект
+        updated_item = await self.db.items.get_one_or_none(id=item_id)
         return updated_item
 
     async def patch_item(self, item_id: int, item_data: SItemPatch):
         item = await self.db.items.get_one_or_none(id=item_id)
         if not item:
             raise ItemNotFoundError
-        # Обновление только непустых полей
-        patch_data = item_data.model_dump(exclude_unset=True)
-        if patch_data:
-            await self.db.items.update(item_id, patch_data)
-            await self.db.commit()
+        # ИСПРАВЬТЕ: update() → edit() с exclude_unset=True
+        await self.db.items.edit(
+            item_data,
+            id=item_id,
+            exclude_unset=True  # <-- Для частичного обновления
+        )
+        await self.db.commit()
         return
 
     async def delete_item(self, item_id: int):
         item = await self.db.items.get_one_or_none(id=item_id)
         if not item:
             raise ItemNotFoundError
-        await self.db.items.delete(item_id)
-        await self.db.commit()
+        # Метод delete() уже делает commit внутри себя!
+        await self.db.items.delete(id=item_id)
+        # НЕ вызывайте await self.db.commit() здесь!
         return
 
-    async def get_items(self):
+    async def get_items(self, filters: SItemFilter = None, skip: int = 0, limit: int = 100):
+        if filters:
+            # Используйте get_filtered для фильтрации
+            filter_dict = filters.model_dump(exclude_unset=True)
+            return await self.db.items.get_filtered(
+                limit=limit,
+                offset=skip,
+                **filter_dict
+            )
         return await self.db.items.get_all()
+
+    async def get_user_items(self, user_id: int, skip: int = 0, limit: int = 100):
+        # Используйте get_filtered с фильтром по user_id
+        return await self.db.items.get_filtered(
+            limit=limit,
+            offset=skip,
+            user_id=user_id
+        )
